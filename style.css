@@ -1,0 +1,34 @@
+table {
+  border-collapse: collapse;
+  margin: 100px auto;
+}
+
+table, th, td {
+  border: 1px solid #e0e0e0;
+}
+
+table td {
+  height: 60px;
+  text-align: center;
+  width: 60px;
+}
+
+table td[data-id="1"] {
+  background: no-repeat center/contain url('images/sheep.png');
+}
+
+table td[data-id="2"] {
+  background: no-repeat center/contain url('images/fence.png');
+}
+
+table td[data-id="3"] {
+  background: no-repeat center/contain url('images/wolf-blood.png');
+}
+
+table td[data-id="4"] {
+  background: no-repeat center/contain url('images/wolf.png');
+}
+
+table td[data-id="5"] {
+  background: no-repeat center/contain url('images/home.png');
+}
