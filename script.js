@@ -55,10 +55,15 @@ let boardData = {
   board: [],
   busyCells: [],
   cellCount: 7,
-  sheepI: 0,
-  sheepJ: 0,
-  sheepID: 1,
-
+  // sheepI: 0,
+  // sheepJ: 0,
+  // sheepID: 1,
+  sheepData: {
+    cellI: 0,
+    cellJ: 0,
+    cellID: 1,
+    count: 1
+  },
   homeData: {
     cellI: 0,
     cellJ: 0,
@@ -121,7 +126,7 @@ function createPosition(data, type) {
   for (let i = 0; i < type.count; i++) {
     let [cellI, cellJ] = getRandomCoord(cellCount);
 
-    busyCells.forEach((busyCell) =>{
+    busyCells.forEach((busyCell) => {
       while (isBusyCell(busyCell, cellI, cellJ)) {
         [cellI, cellJ] = getRandomCoord(cellCount);
       }
@@ -148,9 +153,7 @@ function createNewBoard(data) {
   data.busyCells = [];
 
   // create sheep position
-  [data.sheepI, data.sheepJ] = getRandomCoord(data.cellCount);
-  data.board[data.sheepI][data.sheepJ] = data.sheepID;
-  data.busyCells.push([data.sheepI, data.sheepJ, data.sheepID]);
+  createPosition(data, data.sheepData);
 
   // create home position
   createPosition(data, data.homeData);
@@ -273,6 +276,7 @@ function changePosition(e, data) {
 // create board
 boardData = createNewBoard(boardData);
 createTable(boardData.board);
+console.log(boardData);
 
 // start moving by keydown action
 document.addEventListener('keydown', function ($event) {
