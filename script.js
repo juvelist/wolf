@@ -55,29 +55,29 @@ let boardData = {
   board: [],
   busyCells: [],
   cellCount: 7,
-  sheepData: {
+  sheep: {
     x: 0,
     y: 0,
     id: 1,
     count: 1
   },
-  homeData: {
+  home: {
     x: 0,
     y: 0,
     id: 5,
     count: 1
   },
-  fencesData: {
+  fences: {
     x: 0,
     y: 0,
     id: 2,
     count: 2
   },
-  wolvesData: {
+  wolves: {
     x: 0,
     y: 0,
-    cellEndID: 3,
     id: 4,
+    idEnd: 3,
     count: 3
   }
 }
@@ -118,9 +118,9 @@ const isBusyCell = (busyCell, xCord, yCord) => {
 
 // create position
 function createPosition(data, type) {
-  const {cellCount, busyCells, board} = data
+  const {cellCount, busyCells, board} = data;
 
-  for (let i = 0; i < type.count; i++) {
+  for (let i = 0; i < data[type].count; i++) {
     let [x, y] = getRandomCoord(cellCount);
 
     busyCells.forEach((busyCell) => {
@@ -129,20 +129,21 @@ function createPosition(data, type) {
       }
     });
 
-    [type.x, type.y] = [x, y];
-    board[type.x][type.y] = type.id;
-    busyCells.push([type.x, type.y, type.id]);
+    [data[type].x, data[type].y] = [x, y];
+    board[data[type].x][data[type].y] = data[type].id;
+    busyCells.push([data[type].x, data[type].y, data[type].id]);
   }
 }
 
 // create new board
 function createNewBoard(data) {
+  const {cellCount, board} = data;
 
   // create empty board
-  for (let i = 0; i < data.cellCount; i++) {
-    data.board.push([]);
-    for (let j = 0; j < data.cellCount; j++) {
-      data.board[i][j] = 0;
+  for (let i = 0; i < cellCount; i++) {
+    board.push([]);
+    for (let j = 0; j < cellCount; j++) {
+      board[i][j] = 0;
     }
   }
 
@@ -150,10 +151,10 @@ function createNewBoard(data) {
   data.busyCells = [];
 
   // create positions
-  createPosition(data, data.sheepData);
-  createPosition(data, data.homeData);
-  createPosition(data, data.fencesData);
-  createPosition(data, data.wolvesData);
+  createPosition(data, 'sheep');
+  createPosition(data, 'home');
+  createPosition(data, 'fences');
+  createPosition(data, 'wolves');
 
   return data;
 }
@@ -164,7 +165,7 @@ function changeWolfPosition(cellData, val) {
 }
 
 function getSheepNextPosition(e, data) {
-  let [i, j] = [data.sheepData.x, data.sheepData.y];
+  let [i, j] = [data.sheep.x, data.sheep.y];
 
   console.log(i, j);
 
@@ -177,6 +178,8 @@ function getSheepNextPosition(e, data) {
   } else if (e.key === 'ArrowDown') {
     i === data.cellCount - 1 ? i = 0 : i++;
   }
+
+  console.log(data.busyCells)
   return [i, j];
 }
 
@@ -194,24 +197,24 @@ function changePosition(e, data) {
     let cellData = data.busyCells[index];
 
     if (JSON.stringify([i, j]) === JSON.stringify(cellData.slice(0, 2))) {
-      if (cellData[2] === data.fencesData.id) {
-        alert('no way to go.');
+      if (cellData[2] === data.fences.id) {
+        // alert('no way to go.');
 
-      } else if (cellData[2] === data.wolvesData.id) {
-        data.board[data.sheepData.x][data.sheepData.y] = 0;
-        data.board[i][j] = data.wolvesData.cellEndID;
+      } else if (cellData[2] === data.wolves.id) {
+        data.board[data.sheep.x][data.sheep.y] = 0;
+        data.board[i][j] = data.wolves.idEnd;
         alert('ooops..');
         break;
         /// --->
 
-      } else if (cellData[2] === data.homeData.id) {
-        data.board[data.sheepData.x][data.sheepData.y] = 0;
+      } else if (cellData[2] === data.home.id) {
+        data.board[data.sheep.x][data.sheep.y] = 0;
         alert('finish!')
         data = createNewBoard(data);
         createTable(data.board);
       }
 
-      if (cellData[2] !== data.sheepData.id) {
+      if (cellData[2] !== data.sheep.id) {
         isBusy = true;
       }
     }
@@ -222,13 +225,17 @@ function changePosition(e, data) {
 
     // update sheep position
     if(!isBusy) {
-      data.board[data.sheepData.x][data.sheepData.y] = 0;
-      data.board[i][j] = data.sheepData.id;
-      [data.sheepData.x][data.sheepData.y] = [i, j];
+      console.log(666, data.board)
+
+      data.board[data.sheep.x][data.sheep.y] = 0;
+      data.board[i][j] = data.sheep.id;
+      [data.sheep.x][data.sheep.y] = [i, j];
+      console.log(777, data.board)
+
     }
 
     // update wolves positions
-    if(cellData[2] === data.wolvesData.id){
+    if(cellData[2] === data.wolves.id){
 
       let iW, jW;
       let iWNew = changeWolfPosition(cellData[0], i);
@@ -249,14 +256,14 @@ function changePosition(e, data) {
 
       // replace wolf
       data.board[cellData[0]][cellData[1]] = 0;
-      if(data.board[iW][jW] === data.sheepData.id) {
-        data.board[iW][jW] = data.wolvesData.cellEndID;
+      if(data.board[iW][jW] === data.sheep.id) {
+        data.board[iW][jW] = data.wolves.idEnd;
         alert('ooouuuuuppsss..');
         break;
         /// --->
       }
-      data.board[iW][jW] = data.wolvesData.id;
-      data.busyCells[index] = [iW, jW, data.wolvesData.id];
+      data.board[iW][jW] = data.wolves.id;
+      data.busyCells[index] = [iW, jW, data.wolves.id];
     }
   }
 
