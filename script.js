@@ -55,27 +55,29 @@ let boardData = {
   board: [],
   busyCells: [],
   cellCount: 7,
-  sheepI: 0,
-  sheepJ: 0,
-  sheepID: 1,
-
+  sheepData: {
+    x: 0,
+    y: 0,
+    id: 1,
+    count: 1
+  },
   homeData: {
-    cellI: 0,
-    cellJ: 0,
-    cellID: 5,
+    x: 0,
+    y: 0,
+    id: 5,
     count: 1
   },
   fencesData: {
-    cellI: 0,
-    cellJ: 0,
-    cellID: 2,
+    x: 0,
+    y: 0,
+    id: 2,
     count: 2
   },
   wolvesData: {
-    cellI: 0,
-    cellJ: 0,
+    x: 0,
+    y: 0,
     cellEndID: 3,
-    cellID: 4,
+    id: 4,
     count: 3
   }
 }
@@ -109,9 +111,9 @@ const getRandomCoord = (max) => {
   return [getRandomPosition(max), getRandomPosition(max)]
 }
 
-const isBusyCell = (busyCell, x, y) => {
-    const [cellI, cellJ] = busyCell.slice(0, 2)
-    return cellI === x && cellJ === y
+const isBusyCell = (busyCell, xCord, yCord) => {
+    const [x, y] = busyCell.slice(0, 2);
+    return x === xCord && y === yCord;
 }
 
 // create position
@@ -119,17 +121,17 @@ function createPosition(data, type) {
   const {cellCount, busyCells, board} = data
 
   for (let i = 0; i < type.count; i++) {
-    let [cellI, cellJ] = getRandomCoord(cellCount);
+    let [x, y] = getRandomCoord(cellCount);
 
-    busyCells.forEach((busyCell) =>{
-      while (isBusyCell(busyCell, cellI, cellJ)) {
-        [cellI, cellJ] = getRandomCoord(cellCount);
+    busyCells.forEach((busyCell) => {
+      while (isBusyCell(busyCell, x, y)) {
+        [x, y] = getRandomCoord(cellCount);
       }
     });
 
-    [type.cellI, type.cellJ] = [cellI, cellJ];
-    board[type.cellI][type.cellJ] = type.cellID;
-    busyCells.push([type.cellI, type.cellJ, type.cellID]);
+    [type.x, type.y] = [x, y];
+    board[type.x][type.y] = type.id;
+    busyCells.push([type.x, type.y, type.id]);
   }
 }
 
@@ -147,18 +149,10 @@ function createNewBoard(data) {
   // create busy cells
   data.busyCells = [];
 
-  // create sheep position
-  [data.sheepI, data.sheepJ] = getRandomCoord(data.cellCount);
-  data.board[data.sheepI][data.sheepJ] = data.sheepID;
-  data.busyCells.push([data.sheepI, data.sheepJ, data.sheepID]);
-
-  // create home position
+  // create positions
+  createPosition(data, data.sheepData);
   createPosition(data, data.homeData);
-
-  // create fences positions
   createPosition(data, data.fencesData);
-
-  // create wolves positions
   createPosition(data, data.wolvesData);
 
   return data;
@@ -170,7 +164,9 @@ function changeWolfPosition(cellData, val) {
 }
 
 function getSheepNextPosition(e, data) {
-  let [i, j] = [data.sheepI, data.sheepJ];
+  let [i, j] = [data.sheepData.x, data.sheepData.y];
+
+  console.log(i, j);
 
   if (e.key === 'ArrowLeft') {
     j === 0 ? j = data.cellCount - 1 : j--;
@@ -191,29 +187,31 @@ function changePosition(e, data) {
   // get sheep's next coordinates [i, j]
   let [i, j] = getSheepNextPosition(e, data);
 
+  console.log('[i, j]', [i, j]);
+
   // check sheep next step
   for(let index = 0; index < data.busyCells.length; index++) {
     let cellData = data.busyCells[index];
 
     if (JSON.stringify([i, j]) === JSON.stringify(cellData.slice(0, 2))) {
-      if (cellData[2] === data.fencesData.cellID) {
+      if (cellData[2] === data.fencesData.id) {
         alert('no way to go.');
 
-      } else if (cellData[2] === data.wolvesData.cellID) {
-        data.board[data.sheepI][data.sheepJ] = 0;
+      } else if (cellData[2] === data.wolvesData.id) {
+        data.board[data.sheepData.x][data.sheepData.y] = 0;
         data.board[i][j] = data.wolvesData.cellEndID;
         alert('ooops..');
         break;
         /// --->
 
-      } else if (cellData[2] === data.homeData.cellID) {
-        data.board[data.sheepI][data.sheepJ] = 0;
+      } else if (cellData[2] === data.homeData.id) {
+        data.board[data.sheepData.x][data.sheepData.y] = 0;
         alert('finish!')
         data = createNewBoard(data);
         createTable(data.board);
       }
 
-      if (cellData[2] !== data.sheepID) {
+      if (cellData[2] !== data.sheepData.id) {
         isBusy = true;
       }
     }
@@ -224,13 +222,13 @@ function changePosition(e, data) {
 
     // update sheep position
     if(!isBusy) {
-      data.board[data.sheepI][data.sheepJ] = 0;
-      data.board[i][j] = data.sheepID;
-      [data.sheepI, data.sheepJ] = [i, j];
+      data.board[data.sheepData.x][data.sheepData.y] = 0;
+      data.board[i][j] = data.sheepData.id;
+      [data.sheepData.x][data.sheepData.y] = [i, j];
     }
 
     // update wolves positions
-    if(cellData[2] === data.wolvesData.cellID){
+    if(cellData[2] === data.wolvesData.id){
 
       let iW, jW;
       let iWNew = changeWolfPosition(cellData[0], i);
@@ -251,14 +249,14 @@ function changePosition(e, data) {
 
       // replace wolf
       data.board[cellData[0]][cellData[1]] = 0;
-      if(data.board[iW][jW] === data.sheepID) {
+      if(data.board[iW][jW] === data.sheepData.id) {
         data.board[iW][jW] = data.wolvesData.cellEndID;
         alert('ooouuuuuppsss..');
         break;
         /// --->
       }
-      data.board[iW][jW] = data.wolvesData.cellID;
-      data.busyCells[index] = [iW, jW, data.wolvesData.cellID];
+      data.board[iW][jW] = data.wolvesData.id;
+      data.busyCells[index] = [iW, jW, data.wolvesData.id];
     }
   }
 
@@ -267,12 +265,14 @@ function changePosition(e, data) {
   // update board
   document.getElementById('board').innerHTML = '';
   createTable(data.board);
+  console.log('data.board', data.board)
   return data;
 }
 
 // create board
 boardData = createNewBoard(boardData);
 createTable(boardData.board);
+console.log(boardData.board);
 
 // start moving by keydown action
 document.addEventListener('keydown', function ($event) {
